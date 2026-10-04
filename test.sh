@@ -21,6 +21,10 @@ t=$(curl -sk -u "wazuh-wui:${API_PASSWORD}" -X POST "https://localhost:55000/sec
 c=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:${DASHBOARD_PORT:-443}/)
 [[ "$c" == 200 || "$c" == 302 ]] && ok "tableau de bord : HTTPS $c" || fail "tableau de bord : code $c"
 
+m=$(docker compose exec -T exporteur wget -qO- http://localhost:9300/metrics 2>/dev/null)
+echo "$m" | grep -q 'bcm_conteneur_actif' && ok "exporteur Prometheus : etat des conteneurs" || fail "exporteur Prometheus injoignable (docker compose logs exporteur)"
+echo "$m" | grep -q 'source="wazuh_indexer"} 1' && ok "exporteur Prometheus : alertes Wazuh lues" || fail "exporteur : lecture des alertes impossible (compte grafana)"
+
 for p in 1514 1515; do
   (exec 3<>/dev/tcp/127.0.0.1/$p) 2>/dev/null && ok "port agents $p ouvert" || fail "port agents $p ferme"
 done

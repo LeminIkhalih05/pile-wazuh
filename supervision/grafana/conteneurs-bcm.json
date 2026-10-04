@@ -1,0 +1,446 @@
+{
+ "title": "Supervision – conteneurs et Wazuh",
+ "uid": "bcm-conteneurs",
+ "tags": [
+  "bcm",
+  "prometheus"
+ ],
+ "timezone": "browser",
+ "time": {
+  "from": "now-6h",
+  "to": "now"
+ },
+ "refresh": "30s",
+ "schemaVersion": 39,
+ "editable": true,
+ "panels": [
+  {
+   "id": 1,
+   "title": "Conteneurs en marche",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "sum(bcm_conteneur_actif)",
+     "format": "time_series",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    }
+   }
+  },
+  {
+   "id": 2,
+   "title": "Conteneurs arrêtés",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "count(bcm_conteneur_actif == 0) or vector(0)",
+     "format": "time_series",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 6,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "title": "Agents Wazuh actifs",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "bcm_wazuh_agents{etat=\"active\"}",
+     "format": "time_series",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "colorMode": "value",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    }
+   }
+  },
+  {
+   "id": 4,
+   "title": "Agents Wazuh déconnectés",
+   "type": "stat",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "bcm_wazuh_agents{etat=\"disconnected\"}",
+     "format": "time_series",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 18,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "colorMode": "background",
+    "graphMode": "none",
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "title": "État de tous les conteneurs",
+   "type": "table",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "bcm_conteneur_actif",
+     "format": "table",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 14,
+    "h": 10
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "Arrêté",
+         "color": "red"
+        },
+        "1": {
+         "text": "En marche",
+         "color": "green"
+        }
+       }
+      }
+     ],
+     "custom": {
+      "cellOptions": {
+       "type": "color-background"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "__name__": true,
+       "instance": true,
+       "job": true
+      },
+      "renameByName": {
+       "nom": "Conteneur",
+       "projet": "Pile",
+       "image": "Image",
+       "Value": "État"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "title": "Cibles Prometheus",
+   "type": "table",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "up",
+     "format": "table",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 14,
+    "y": 4,
+    "w": 10,
+    "h": 10
+   },
+   "fieldConfig": {
+    "defaults": {
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "DOWN",
+         "color": "red"
+        },
+        "1": {
+         "text": "UP",
+         "color": "green"
+        }
+       }
+      }
+     ],
+     "custom": {
+      "cellOptions": {
+       "type": "color-background"
+      }
+     }
+    },
+    "overrides": []
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "__name__": true
+      },
+      "renameByName": {
+       "job": "Job",
+       "instance": "Cible",
+       "Value": "État"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "title": "Alertes Wazuh (5 dernières minutes) par niveau",
+   "type": "timeseries",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "bcm_wazuh_alertes{fenetre=\"5m\"}",
+     "format": "time_series",
+     "instant": false,
+     "range": true,
+     "legendFormat": "{{niveau}}"
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 14,
+    "w": 14,
+    "h": 8
+   }
+  },
+  {
+   "id": 8,
+   "title": "Redémarrages des conteneurs",
+   "type": "table",
+   "datasource": {
+    "type": "prometheus",
+    "uid": "__PROM_UID__"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "prometheus",
+      "uid": "__PROM_UID__"
+     },
+     "expr": "bcm_conteneur_redemarrages > 0",
+     "format": "table",
+     "instant": true,
+     "range": false,
+     "legendFormat": ""
+    }
+   ],
+   "gridPos": {
+    "x": 14,
+    "y": 14,
+    "w": 10,
+    "h": 8
+   },
+   "transformations": [
+    {
+     "id": "merge",
+     "options": {}
+    },
+    {
+     "id": "organize",
+     "options": {
+      "excludeByName": {
+       "Time": true,
+       "__name__": true,
+       "instance": true,
+       "job": true,
+       "image": true
+      },
+      "renameByName": {
+       "nom": "Conteneur",
+       "projet": "Pile",
+       "Value": "Redémarrages"
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

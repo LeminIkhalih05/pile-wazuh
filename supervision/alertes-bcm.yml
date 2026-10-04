@@ -1,0 +1,63 @@
+# Alertes Prometheus de la pile BCM (copiees par integrer-supervision.sh a cote de prometheus.yml)
+groups:
+  - name: bcm-conteneurs
+    rules:
+      - alert: ConteneurArrete
+        expr: bcm_conteneur_actif == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Conteneur arrete : {{ $labels.nom }}"
+          description: "Le conteneur {{ $labels.nom }} (pile {{ $labels.projet }}) ne tourne plus depuis 2 minutes."
+      - alert: ConteneurRedemarreEnBoucle
+        expr: increase(bcm_conteneur_redemarrages[15m]) > 2
+        labels: { severity: warning }
+        annotations:
+          summary: "Redemarrages repetes : {{ $labels.nom }}"
+      - alert: ConteneurMalade
+        expr: bcm_conteneur_sain == 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Conteneur en mauvaise sante : {{ $labels.nom }}"
+      - alert: ExporteurBCMInjoignable
+        expr: up{job="bcm-exporteur"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations:
+          summary: "Prometheus ne joint plus l'exporteur de la pile Wazuh"
+
+  - name: bcm-wazuh
+    rules:
+      - alert: WazuhSourceInjoignable
+        expr: bcm_exporteur_source_ok == 0
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "Wazuh : {{ $labels.source }} ne repond plus"
+      - alert: WazuhAgentDeconnecte
+        expr: bcm_wazuh_agents{etat="disconnected"} > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $value }} agent(s) Wazuh deconnecte(s)"
+      - alert: WazuhAlerteElevee
+        expr: bcm_wazuh_alertes{niveau="eleve",fenetre="5m"} > 0
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $value }} alerte(s) de securite de niveau eleve (12+) ces 5 dernieres minutes"
+
+  - name: bcm-serveur
+    rules:
+      - alert: DisqueBientotPlein
+        expr: node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay"} < 0.15
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Moins de 15 % d'espace libre sur / ({{ $labels.instance }})"
+      - alert: MemoireSaturee
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Moins de 10 % de memoire disponible ({{ $labels.instance }})"

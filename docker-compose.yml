@@ -93,6 +93,24 @@ services:
       - wazuh.indexer
       - wazuh.manager
 
+  # Exporteur Prometheus : etat des conteneurs, agents et alertes Wazuh (supervision/exporteur.py)
+  exporteur:
+    image: python:3.12-alpine
+    hostname: exporteur
+    restart: always
+    command: ["python3", "-u", "/app/exporteur.py"]
+    environment:
+      - API_PASSWORD=${API_PASSWORD}
+      - INDEXER_USERNAME=grafana
+      - INDEXER_PASSWORD=${GRAFANA_INDEXER_PASSWORD}
+      - TZ=${TZ}
+    volumes:
+      - ./supervision/exporteur.py:/app/exporteur.py:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # lecture de l'etat des conteneurs
+    depends_on:
+      - wazuh.manager
+      - wazuh.indexer
+
 volumes:
   wazuh_api_configuration:
   wazuh_etc:

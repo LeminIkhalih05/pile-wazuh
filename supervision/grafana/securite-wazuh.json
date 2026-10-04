@@ -1,0 +1,506 @@
+{
+ "title": "Sécurité – alertes Wazuh",
+ "uid": "bcm-securite-wazuh",
+ "tags": [
+  "bcm",
+  "wazuh",
+  "securite"
+ ],
+ "timezone": "browser",
+ "time": {
+  "from": "now-24h",
+  "to": "now"
+ },
+ "refresh": "1m",
+ "schemaVersion": 39,
+ "editable": true,
+ "panels": [
+  {
+   "id": 1,
+   "title": "Alertes (toutes)",
+   "type": "stat",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "*",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "date_histogram",
+       "field": "timestamp",
+       "settings": {
+        "interval": "auto"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "sum"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "unit": "short"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "title": "Alertes moyennes (niveau 7 à 11)",
+   "type": "stat",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "rule.level:[7 TO 11]",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "date_histogram",
+       "field": "timestamp",
+       "settings": {
+        "interval": "auto"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 6,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "sum"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     },
+     "unit": "short"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "title": "Alertes élevées (niveau 12+)",
+   "type": "stat",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "rule.level:>=12",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "date_histogram",
+       "field": "timestamp",
+       "settings": {
+        "interval": "auto"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "sum"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     },
+     "unit": "short"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "title": "Passerelle Tyk : accès refusés",
+   "type": "stat",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "rule.groups:tyk",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "date_histogram",
+       "field": "timestamp",
+       "settings": {
+        "interval": "auto"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 18,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "sum"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     },
+     "unit": "short"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "title": "Alertes dans le temps, par niveau",
+   "type": "timeseries",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "*",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "3",
+       "type": "terms",
+       "field": "rule.level",
+       "settings": {
+        "size": "20",
+        "order": "desc",
+        "orderBy": "_count",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "2",
+       "type": "date_histogram",
+       "field": "timestamp",
+       "settings": {
+        "interval": "auto"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 24,
+    "h": 8
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "drawStyle": "bars",
+      "stacking": {
+       "mode": "normal"
+      },
+      "fillOpacity": 80
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    }
+   }
+  },
+  {
+   "id": 6,
+   "title": "Règles les plus déclenchées",
+   "type": "table",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "*",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "3",
+       "type": "terms",
+       "field": "rule.description",
+       "settings": {
+        "size": "15",
+        "order": "desc",
+        "orderBy": "_count",
+        "min_doc_count": "1"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 12,
+    "w": 14,
+    "h": 9
+   }
+  },
+  {
+   "id": 7,
+   "title": "Alertes par machine (agent)",
+   "type": "table",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "*",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "3",
+       "type": "terms",
+       "field": "agent.name",
+       "settings": {
+        "size": "15",
+        "order": "desc",
+        "orderBy": "_count",
+        "min_doc_count": "1"
+       }
+      }
+     ],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 14,
+    "y": 12,
+    "w": 10,
+    "h": 9
+   }
+  },
+  {
+   "id": 8,
+   "title": "Dernières alertes de niveau 7 et plus",
+   "type": "logs",
+   "datasource": {
+    "type": "elasticsearch",
+    "uid": "wazuh-alertes"
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "elasticsearch",
+      "uid": "wazuh-alertes"
+     },
+     "query": "rule.level:>=7",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "logs",
+       "settings": {
+        "limit": "200"
+       }
+      }
+     ],
+     "bucketAggs": [],
+     "timeField": "timestamp"
+    }
+   ],
+   "gridPos": {
+    "x": 0,
+    "y": 21,
+    "w": 24,
+    "h": 10
+   },
+   "options": {
+    "showTime": true,
+    "wrapLogMessage": true,
+    "sortOrder": "Descending",
+    "enableLogDetails": true
+   }
+  }
+ ]
+}

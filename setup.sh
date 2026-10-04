@@ -19,7 +19,8 @@ fi
 genpw() { printf '%s%s' "$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 20)" 'Aa1.'; }
 [ -f .env ] || cp .env.example .env
 chmod 600 .env
-for v in INDEXER_ADMIN_PASSWORD DASHBOARD_PASSWORD API_PASSWORD ENROLLMENT_PASSWORD; do
+for v in INDEXER_ADMIN_PASSWORD DASHBOARD_PASSWORD API_PASSWORD ENROLLMENT_PASSWORD GRAFANA_INDEXER_PASSWORD; do
+  grep -q "^${v}=" .env || echo "${v}=" >> .env
   if grep -q "^${v}=$" .env; then
     sed -i "s/^${v}=$/${v}=$(genpw)/" .env
     echo "[OK] ${v} genere dans .env (a copier dans votre coffre a mots de passe)"
@@ -85,6 +86,9 @@ docker compose exec -T -e P="$ENROLLMENT_PASSWORD" wazuh.manager sh -c \
   'printf "%s\n" "$P" > /var/ossec/etc/authd.pass && chown root:wazuh /var/ossec/etc/authd.pass && chmod 640 /var/ossec/etc/authd.pass'
 docker compose cp agents/groupes/gateway/agent.conf wazuh.manager:/var/ossec/etc/shared/gateway/agent.conf
 docker compose exec -T wazuh.manager chown wazuh:wazuh /var/ossec/etc/shared/gateway/agent.conf
+# Regles BCM (journaux Tyk)
+docker compose cp config/wazuh_cluster/regles_bcm.xml wazuh.manager:/var/ossec/etc/rules/regles_bcm.xml
+docker compose exec -T wazuh.manager chown wazuh:wazuh /var/ossec/etc/rules/regles_bcm.xml
 docker compose restart wazuh.manager
 echo "[OK] Enrolement protege par mot de passe, groupe gateway pret"
 
@@ -92,6 +96,17 @@ echo "[..] Demarrage de l'indexer et du tableau de bord (2 a 3 minutes)"
 for i in $(seq 1 60); do
   curl -sk -o /dev/null -w '%{http_code}' https://localhost:${DASHBOARD_PORT}/ 2>/dev/null | grep -qE '^(200|302)$' && break; sleep 5
 done
+# Compte "grafana" en lecture seule sur les alertes (Grafana, exporteur Prometheus)
+for i in $(seq 1 24); do
+  curl -sk -o /dev/null -u "admin:${INDEXER_ADMIN_PASSWORD}" https://localhost:9200/ && break; sleep 5
+done
+IDX="https://localhost:9200/_plugins/_security/api"
+curl -sfk -u "admin:${INDEXER_ADMIN_PASSWORD}" -X PUT -H 'Content-Type: application/json' "$IDX/roles/grafana_lecture" \
+  -d '{"cluster_permissions":["cluster_composite_ops_ro","cluster:monitor/health"],"index_permissions":[{"index_patterns":["wazuh-alerts-*","wazuh-archives-*"],"allowed_actions":["read","indices:admin/mappings/get"]}]}' >/dev/null \
+&& GRAFANA_INDEXER_PASSWORD="$GRAFANA_INDEXER_PASSWORD" python3 -c 'import json,os;print(json.dumps({"password":os.environ["GRAFANA_INDEXER_PASSWORD"],"opendistro_security_roles":["grafana_lecture"]}))' \
+ | curl -sfk -u "admin:${INDEXER_ADMIN_PASSWORD}" -X PUT -H 'Content-Type: application/json' "$IDX/internalusers/grafana" -d @- >/dev/null \
+&& echo "[OK] Compte indexer 'grafana' (lecture seule des alertes)" || echo "[KO] Creation du compte indexer 'grafana'"
+
 for i in $(seq 1 36); do
   curl -sk -u "wazuh-wui:${API_PASSWORD}" -X POST "https://localhost:55000/security/user/authenticate?raw=true" 2>/dev/null | grep -q '^ey' && break; sleep 5
 done

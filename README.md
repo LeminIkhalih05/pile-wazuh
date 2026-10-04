@@ -37,6 +37,9 @@ Sur une VM cloud (GCP…), ouvrir dans le pare-feu du fournisseur le port du tab
 |---|---|
 | `docker-compose.yml` | Les trois conteneurs Wazuh |
 | `.env.example` | Version, fuseau, mémoire de l'indexer, mots de passe (vides, générés par `setup.sh`) |
+| `integrer-supervision.sh` | Liaison avec Prometheus et Grafana (exporteur, alertes, tableaux de bord, agent local) |
+| `verifier.sh` | État de tous les services du serveur |
+| `supervision/` | Exporteur Prometheus, alertes Prometheus, tableaux de bord Grafana |
 | `install.sh` | Installation en une commande depuis GitHub (Docker, clonage, `setup.sh`) |
 | `setup.sh` | Préparation et démarrage de la pile dans le dossier courant |
 | `test.sh` | Contrôle de bon fonctionnement |
@@ -193,7 +196,55 @@ systemctl restart rsyslog
 Switch Cisco : `logging host 192.168.12.103` puis `logging trap informational`.
 iLO : **Management > Remote Syslog**, serveur 192.168.12.103, port 514.
 
-## 6. Exploitation courante
+## 6. Supervision avec Prometheus et Grafana
+
+Sur un serveur qui fait déjà tourner Prometheus et Grafana en Docker Compose (par exemple la pile
+`pile-tyk-monitoring`), une commande relie tout :
+
+```bash
+cd ~/pile-wazuh && ./integrer-supervision.sh
+```
+
+Le script :
+
+1. ajoute Grafana et Prometheus au réseau Docker de Wazuh, par un `docker-compose.override.yml`
+   placé dans le dossier de leur pile (le lien survit aux redémarrages) ;
+2. ajoute à `prometheus.yml` (sauvegarde `prometheus.yml.avant-wazuh.*`) la collecte de l'exporteur BCM
+   et 9 alertes (`supervision/alertes-bcm.yml`) ;
+3. crée dans Grafana la source **Wazuh (alertes)**, avec le compte `grafana` en lecture seule de l'indexer,
+   et deux tableaux de bord dans le dossier **Supervision BCM** ;
+4. installe un agent Wazuh sur le serveur (`SANS_AGENT=1` pour s'en passer) : journaux du système et des
+   conteneurs Docker (dont Tyk), intégrité des fichiers de la pile de supervision.
+
+Si le mot de passe admin de Grafana a été changé : `GRAFANA_PASSWORD='...' ./integrer-supervision.sh`.
+
+| Élément | Contenu |
+|---|---|
+| Exporteur BCM (`exporteur:9300`) | État de chaque conteneur du serveur, redémarrages, agents Wazuh (actifs, déconnectés), alertes Wazuh par niveau sur 5 et 60 min |
+| Tableau **Supervision – conteneurs et Wazuh** | Conteneurs en marche ou arrêtés, cibles Prometheus, agents, alertes par niveau |
+| Tableau **Sécurité – alertes Wazuh** | Alertes par niveau dans le temps, règles et machines les plus concernées, accès refusés par Tyk, dernières alertes |
+| Alertes Prometheus | Conteneur arrêté ou qui redémarre en boucle, Wazuh injoignable, agent déconnecté, alerte de sécurité de niveau 12+, disque et mémoire |
+| Règles Wazuh BCM | Journaux Tyk : clé ou jeton JWT refusé, quota dépassé, erreur de la passerelle, rafale de refus (niveau 10) |
+
+Accès (tunnel SSH depuis le poste) :
+
+```bash
+ssh -L 3000:localhost:3000 -L 9090:localhost:9090 -L 8443:localhost:8443 utilisateur@IP_DU_SERVEUR
+```
+
+Grafana : http://localhost:3000 (Dashboards > Supervision BCM) ; alertes Prometheus : http://localhost:9090/alerts ;
+Wazuh : https://localhost:8443 (ou 443).
+
+### Vérifier tous les services en une commande
+
+```bash
+~/pile-wazuh/verifier.sh
+```
+
+Affiche l'état de chaque conteneur, de la passerelle Tyk, des cibles et alertes Prometheus, de Grafana
+et de Wazuh, puis `RESULTAT : tous les services sont operationnels` ou la liste des lignes `[KO]`.
+
+## 7. Exploitation courante
 
 | Action | Commande (dans `/opt/wazuh`) |
 |---|---|
