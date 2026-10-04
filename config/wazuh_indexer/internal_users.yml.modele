@@ -1,0 +1,20 @@
+---
+# Base des utilisateurs internes de l'indexer (OpenSearch).
+# Les empreintes bcrypt sont calculees par setup.sh a partir du .env
+# avant le premier demarrage. Les comptes de demonstration ont ete retires.
+
+_meta:
+  type: "internalusers"
+  config_version: 2
+
+admin:
+  hash: "__ADMIN_HASH__"
+  reserved: true
+  backend_roles:
+  - "admin"
+  description: "Administrateur de l'indexer"
+
+kibanaserver:
+  hash: "__KIBANASERVER_HASH__"
+  reserved: true
+  description: "Compte technique du tableau de bord"
