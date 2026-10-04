@@ -25,7 +25,10 @@ Le script installe Docker si besoin, clone le dépôt dans `~/pile-wazuh`, règl
 selon la RAM (`INDEXER_HEAP=2g` devant `bash` pour l'imposer), puis lance `setup.sh`.
 Les mots de passe générés sont dans `~/pile-wazuh/.env`. Pour un dépôt privé, cloner à la main puis lancer `./install.sh`.
 
-Sur une VM cloud (GCP…), ouvrir dans le pare-feu du fournisseur le port TCP 443 pour votre seule IP
+Le tableau de bord écoute sur le port 443, ou sur **8443** si 443 est déjà utilisé sur le serveur
+(choix automatique, visible dans `.env` : `DASHBOARD_PORT`).
+
+Sur une VM cloud (GCP…), ouvrir dans le pare-feu du fournisseur le port du tableau de bord (443 ou 8443) pour votre seule IP
 (et 1514-1515 pour les IP des agents), jamais 9200 ni 55000.
 
 ## Contenu

@@ -25,6 +25,13 @@ for v in INDEXER_ADMIN_PASSWORD DASHBOARD_PASSWORD API_PASSWORD ENROLLMENT_PASSW
     echo "[OK] ${v} genere dans .env (a copier dans votre coffre a mots de passe)"
   fi
 done
+# Port du tableau de bord : 443, ou 8443 si 443 est deja pris par un autre service
+grep -q '^DASHBOARD_PORT=' .env || echo 'DASHBOARD_PORT=' >> .env
+if grep -q '^DASHBOARD_PORT=$' .env; then
+  if (exec 3<>/dev/tcp/127.0.0.1/443) 2>/dev/null || { command -v ss >/dev/null && ss -Hltn 'sport = :443' | grep -q .; }; then P=8443; else P=443; fi
+  sed -i "s/^DASHBOARD_PORT=$/DASHBOARD_PORT=${P}/" .env
+  echo "[OK] Port du tableau de bord : ${P}"
+fi
 set -a; . ./.env; set +a
 for v in WAZUH_VERSION INDEXER_HEAP INDEXER_ADMIN_PASSWORD DASHBOARD_PASSWORD API_PASSWORD ENROLLMENT_PASSWORD; do
   [ -n "${!v:-}" ] || { echo "[KO] $v vide dans .env"; exit 1; }
@@ -83,7 +90,7 @@ echo "[OK] Enrolement protege par mot de passe, groupe gateway pret"
 
 echo "[..] Demarrage de l'indexer et du tableau de bord (2 a 3 minutes)"
 for i in $(seq 1 60); do
-  curl -sk -o /dev/null -w '%{http_code}' https://localhost/ 2>/dev/null | grep -qE '^(200|302)$' && break; sleep 5
+  curl -sk -o /dev/null -w '%{http_code}' https://localhost:${DASHBOARD_PORT}/ 2>/dev/null | grep -qE '^(200|302)$' && break; sleep 5
 done
 for i in $(seq 1 36); do
   curl -sk -u "wazuh-wui:${API_PASSWORD}" -X POST "https://localhost:55000/security/user/authenticate?raw=true" 2>/dev/null | grep -q '^ey' && break; sleep 5

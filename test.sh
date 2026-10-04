@@ -18,7 +18,7 @@ h=$(curl -sk -u "admin:${INDEXER_ADMIN_PASSWORD}" https://localhost:9200/_cluste
 t=$(curl -sk -u "wazuh-wui:${API_PASSWORD}" -X POST "https://localhost:55000/security/user/authenticate?raw=true")
 [[ "$t" == ey* ]] && ok "API Wazuh : authentification wazuh-wui" || fail "API Wazuh : authentification refusee"
 
-c=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost/)
+c=$(curl -sk -o /dev/null -w '%{http_code}' https://localhost:${DASHBOARD_PORT:-443}/)
 [[ "$c" == 200 || "$c" == 302 ]] && ok "tableau de bord : HTTPS $c" || fail "tableau de bord : code $c"
 
 for p in 1514 1515; do
@@ -31,5 +31,5 @@ if [ -n "${t:-}" ] && [[ "$t" == ey* ]]; then
   echo "[..] agents actifs (manager compris) : ${n:-?}"
 fi
 
-[ $ko -eq 0 ] && echo "Tout est OK. Tableau de bord : https://$(hostname -I | awk '{print $1}')  (compte admin, mot de passe INDEXER_ADMIN_PASSWORD du .env)"
+[ $ko -eq 0 ] && echo "Tout est OK. Tableau de bord : https://$(hostname -I | awk '{print $1}'):${DASHBOARD_PORT:-443}  (compte admin, mot de passe INDEXER_ADMIN_PASSWORD du .env)"
 exit $ko

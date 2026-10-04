@@ -71,7 +71,7 @@ services:
     hostname: wazuh.dashboard
     restart: always
     ports:
-      - "443:5601"                # tableau de bord (HTTPS)
+      - "${DASHBOARD_PORT:-443}:5601"   # tableau de bord (HTTPS)
     environment:
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=${INDEXER_ADMIN_PASSWORD}
